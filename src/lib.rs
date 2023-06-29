@@ -43,7 +43,7 @@ pub fn brackets<'a>(Tokenizer<'a>(&Tokenizer<'a>)->ParseResult<'a, Expr> {
     let it = t.clone();
 
     let (it, _) = token_bool(t, |t| *t == Token::BrOpen)?;
-    let (it, res) = ___(&it)?;    // Haven't written this yet
+    let (it, res) = sub(&it)?;    // Occurs only if bracked was seen (peeked)
     let (it, _) = token_bool(&it, |t| *t == Token::BrClose)?;
     Ok((it, Expr::Brackets(Box::new(res))))
 }
@@ -58,3 +58,45 @@ pub fn item<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
         _ => Err("Couldn't find number or bracket".to_string()),
     }
 }
+
+pub fn div<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
+    let (it, left) = item(t)?;
+    if let Ok((divit, _) = token_bool(&it, |v|*v == Token::Div) {
+        let (rit, right) = div(&divit)?;
+        Ok((rit, op(Oper::Div, left, right)))
+    } else {
+        Ok(it, left))
+    }
+}
+
+pub fn mul<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
+    let (it, left) = div(t)?;
+    if let Ok((divit, _) = token_bool(&it, |v|*v == Token::Mul) {
+        let (rit, right) = mul(&divit)?;
+        Ok((rit, op(Oper::Mul, left, right)))
+    } else {
+        Ok(it, left))
+    }
+}
+
+pub fn add<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
+    let (it, left) = mul(t)?;
+    if let Ok((divit, _) = token_bool(&it, |v|*v == Token::Add) {
+        let (rit, right) = add(&divit)?;
+        Ok((rit, op(Oper::Add, left, right)))
+    } else {
+        Ok(it, left))
+    }
+}
+
+pub fn sub<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
+    let (it, left) = add(t)?;
+    if let Ok((divit, _) = token_bool(&it, |v|*v == Token::Sub) {
+        let (rit, right) = sub(&divit)?;
+        Ok((rit, op(Oper::Sub, left, right)))
+    } else {
+        Ok(it, left))
+    }
+}
+
+
