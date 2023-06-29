@@ -24,28 +24,27 @@ pub fn op(o: Oper, a: Expr, b: Expr) -> Expr {
 impl FromStr for Expr {
     type Err = String;
     fn from_str(_s: &str) -> Result<Expr, String> {
-        let t = Tokenizer::new(s);
-        let (_,e) = sub(&t)?;
+        let t = Tokenizer::new(_s);
+        let (_, e) = sub(&t)?;
 
         Ok(e)
     }
 }
 
-pub type ParseResult<'a,T> = Result<(Tokenizer<'a>,T), String>;
+pub type ParseResult<'a, T> = Result<(Tokenizer<'a>, T), String>;
 
-pub fn token_bool<'a,F:Fn(&Token)->bool>(t:Tokenizer<'a>, f:F)->ParseResult<'a,
-Token> {
+pub fn token_bool<'a, F: Fn(&Token) -> bool>(t: &Tokenizer<'a>, f: F) -> ParseResult<'a, Token> {
     let mut it = t.clone();
     match it.next() {
-        Some(Ok(v) if f(&v) => Ok((it, v))),
+        Some(Ok(v)) if f(&v) => Ok((it, v)),
         _ => Err("Failed in Token bool test".to_string()),
     }
 }
 
-pub fn brackets<'a>(t: &Tokenizer<'a>)->ParseResult<'a, Expr> {
-    let (it, _) = token_bool(t, |t| *t == Token::BrOpen)?;
-    let (it, res) = sub(&it)?;    // Occurs only if bracked was seen (peeked)
-    let (it, _) = token_bool(it, |t| *t == Token::BrClose)?;
+pub fn brackets<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
+    let (it, _) = token_bool(&t, |t| *t == Token::BrOpen)?;
+    let (it, res) = sub(&it)?; // Occurs only if bracked was seen (peeked)
+    let (it, _) = token_bool(&it, |t| *t == Token::BrClose)?;
     Ok((it, Expr::Brackets(Box::new(res))))
 }
 
@@ -61,9 +60,9 @@ pub fn item<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
     }
 }
 
-pub fn div<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
+pub fn div<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
     let (it, left) = item(t)?;
-    if let Ok((divit, _)) = token_bool(it, |v|*v == Token::Div) {
+    if let Ok((divit, _)) = token_bool(&it, |v| *v == Token::Div) {
         let (rit, right) = div(&divit)?;
         Ok((rit, op(Oper::Div, left, right)))
     } else {
@@ -71,9 +70,9 @@ pub fn div<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
     }
 }
 
-pub fn mul<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
+pub fn mul<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
     let (it, left) = div(t)?;
-    if let Ok((divit, _)) = token_bool(it, |v|*v == Token::Mul) {
+    if let Ok((divit, _)) = token_bool(&it, |v| *v == Token::Mul) {
         let (rit, right) = mul(&divit)?;
         Ok((rit, op(Oper::Mul, left, right)))
     } else {
@@ -81,9 +80,9 @@ pub fn mul<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
     }
 }
 
-pub fn add<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
+pub fn add<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
     let (it, left) = mul(t)?;
-    if let Ok((divit, _)) = token_bool(it, |v|*v == Token::Add) {
+    if let Ok((divit, _)) = token_bool(&it, |v| *v == Token::Add) {
         let (rit, right) = add(&divit)?;
         Ok((rit, op(Oper::Add, left, right)))
     } else {
@@ -91,9 +90,9 @@ pub fn add<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
     }
 }
 
-pub fn sub<'a>(t:&Tokenizer<'a>)->ParseResult<'a, Expr> {
+pub fn sub<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
     let (it, left) = add(t)?;
-    if let Ok((divit, _)) = token_bool(it, |v|*v == Token::Sub) {
+    if let Ok((divit, _)) = token_bool(&it, |v| *v == Token::Sub) {
         let (rit, right) = sub(&divit)?;
         Ok((rit, op(Oper::Sub, left, right)))
     } else {
@@ -115,11 +114,9 @@ mod tests {
                 op(
                     Oper::Mul,
                     Expr::Num(5),
-                    Expr::Brackets(Box::new(op(Oper::Sub, Expr::Num(7),
-                    Expr::Num(3))))
+                    Expr::Brackets(Box::new(op(Oper::Sub, Expr::Num(7), Expr::Num(3))))
                 )
             )
         );
     }
 }
-
