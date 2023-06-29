@@ -14,6 +14,7 @@ pub enum Token {
 	Num(i64),
 }
 
+#{derive(Clone)]
 pub struct Tokenizer<'a> {
 	it: IT<'a>,
 }

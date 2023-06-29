@@ -1,6 +1,6 @@
 mod token;
 use std::str::FromStr;
-use token::Tokenizer;
+use token::*;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Expr {
@@ -35,12 +35,17 @@ Token> {
     let mut it = t.clone();
     match it.next() {
         Some(Ok(v) if f(&v) => Ok((it, v)),
-        _ => Err("Failed in Token bool test"),
+        _ => Err("Failed in Token bool test".to_string()),
     }
 }
 
 pub fn brackets<'a>(Tokenizer<'a>(&Tokenizer<'a>)->ParseResult<'a, Expr> {
     let it = t.clone();
-    // Gross...
-    if let Some(Ok(nt, _)) = 
+
+    let (it, _) = token_bool(t, |t| *t == Token::BrOpen)?;
+    // Haven't written this yet
+    let (it, res) = ___(&it)?;
+    let (it, _) = token_bool(t, |t| *t == Token::BrClose)?;
+    Ok((it, Expr::Brackets(Box::new(res))))
+
 }
