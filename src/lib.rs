@@ -23,8 +23,8 @@ pub fn op(o: Oper, a: Expr, b: Expr) -> Expr {
 
 impl FromStr for Expr {
     type Err = String;
-    fn from_str(_s: &str) -> Result<Expr, String> {
-        let t = Tokenizer::new(_s);
+    fn from_str(s: &str) -> Result<Expr, String> {
+        let t = Tokenizer::new(s);
         let (_, e) = sub(&t)?;
 
         Ok(e)
@@ -45,6 +45,7 @@ pub fn brackets<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
     let (it, _) = token_bool(&t, |t| *t == Token::BrOpen)?;
     let (it, res) = sub(&it)?; // Occurs only if bracked was seen (peeked)
     let (it, _) = token_bool(&it, |t| *t == Token::BrClose)?;
+
     Ok((it, Expr::Brackets(Box::new(res))))
 }
 
