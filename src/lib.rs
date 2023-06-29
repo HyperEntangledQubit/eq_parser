@@ -43,9 +43,18 @@ pub fn brackets<'a>(Tokenizer<'a>(&Tokenizer<'a>)->ParseResult<'a, Expr> {
     let it = t.clone();
 
     let (it, _) = token_bool(t, |t| *t == Token::BrOpen)?;
-    // Haven't written this yet
-    let (it, res) = ___(&it)?;
-    let (it, _) = token_bool(t, |t| *t == Token::BrClose)?;
+    let (it, res) = ___(&it)?;    // Haven't written this yet
+    let (it, _) = token_bool(&it, |t| *t == Token::BrClose)?;
     Ok((it, Expr::Brackets(Box::new(res))))
+}
 
+pub fn item<'a>(t: &Tokenizer<'a>) -> ParseResult<'a, Expr> {
+    if let Ok(v) = brackets(t) {
+        return Ok(v);
+    }
+    let mut it = t.clone();
+    match it.next() {
+        Some(Ok(Token::Num(n))) => Ok(it, Expr::Num(n))),
+        _ => Err("Couldn't find number or bracket".to_string()),
+    }
 }
